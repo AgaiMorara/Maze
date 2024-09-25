@@ -2,7 +2,7 @@
 #include <SDL2/SDL.h>
 #include <math.h>
 
-int ray_index = 0;
+extern int texture[200 * 200 * 3];  /* Texture array from bamboo.c */
 
 /* Function to cast a single ray and find the distance to the nearest wall */
 float cast_ray(float ray_angle, float x_pos, float y_pos, SDL_Renderer *rend, int is_3d, int ray_index) {
@@ -13,11 +13,11 @@ float cast_ray(float ray_angle, float x_pos, float y_pos, SDL_Renderer *rend, in
     int hit_wall = 0;
     int grid_x;
     int grid_y;
-    int color;
+    int texture_x, texture_y,tex_index, r, g, b, y ;
 
     float corrected_dist;
     float step_size = 0.1;
-    float hit_x = x_pos;
+    float hit_x = x_pos, wall_hit_x;
     float hit_y = y_pos;
 
     /* Normalize the ray angle */
@@ -44,18 +44,26 @@ float cast_ray(float ray_angle, float x_pos, float y_pos, SDL_Renderer *rend, in
     /* Calculate wall height (2/3 of the screen max) */
     wall_height = (int)((WINDOW_HEIGHT * 2 / 3) * CELL_SIZE / corrected_dist);
 
-    /* Calculate color based on distance */
-   
- color = (int)(255 / (corrected_dist * 0.1));
-    if (color > 255) color = 255;
-    if (color < 50) color = 50;
+    /* Calculate texture offset based on where the ray hit */
+     wall_hit_x = fmod(hit_x, CELL_SIZE) / CELL_SIZE;  /* Horizontal hit position within the wall */
+    texture_x = (int)(wall_hit_x * 200);  /* Map to texture coordinates */
 
-    /* Set the color for the wall */
-    SDL_SetRenderDrawColor(rend, color, color, color, 255);  /* Shades of gray for walls */
+    /* Render the wall slice with texture */
+    for (y = 0; y < wall_height; y++) {
+      texture_y = (int)((float)y / wall_height * 200);  /* Map to texture coordinates */
+      tex_index = (texture_y * 200 + texture_x) * 3;    /* Texture index (RGB) */
 
-    /* Draw the wall slice */
-    SDL_RenderDrawLine(rend, WINDOW_WIDTH + ray_index, (WINDOW_HEIGHT - wall_height) / 2,
-                       WINDOW_WIDTH + ray_index, (WINDOW_HEIGHT + wall_height) / 2);
+      /* Fetch RGB values from the texture array */
+        r = texture[tex_index];
+        g = texture[tex_index + 1];
+        b = texture[tex_index + 2];
+
+        /* Set the color for the wall slice pixel */
+        SDL_SetRenderDrawColor(rend, r, g, b, 255);
+
+        /* Draw the pixel (column of the wall slice) */
+        SDL_RenderDrawPoint(rend, WINDOW_WIDTH + ray_index, (WINDOW_HEIGHT - wall_height) / 2 + y);
+    }
 
     /* Return the calculated distance */
     return distance;

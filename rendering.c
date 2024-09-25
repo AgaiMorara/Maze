@@ -92,3 +92,46 @@ void update_player_position(float *x_pos, float *y_pos, float x_vel, float y_vel
         *y_pos = new_y;
     }
 }
+
+/* Function to draw the ceiling using the sky texture */
+void draw_ceiling(SDL_Renderer *rend, int *ceiling_texture, int ceiling_width, int ceiling_height) {
+int i, j, r, g, b;
+    int tex_x, tex_y;
+    for (i = 0; i < WINDOW_WIDTH; i++) {
+        for (j = 0; j < WINDOW_HEIGHT / 2; j++) {
+/* Texture mapping logic*/
+            tex_x = (i * ceiling_width) / WINDOW_WIDTH;
+            tex_y = (j * ceiling_height) / (WINDOW_HEIGHT / 2);
+
+/* Get the pixel color from the texture array */
+             r = ceiling_texture[(tex_y * ceiling_width + tex_x) * 3];
+             g = ceiling_texture[(tex_y * ceiling_width + tex_x) * 3 + 1];
+             b = ceiling_texture[(tex_y * ceiling_width + tex_x) * 3 + 2];
+
+            SDL_SetRenderDrawColor(rend, r, g, b, 255);
+            SDL_RenderDrawPoint(rend, i, j);
+        }
+    }
+}
+
+/* Function to draw the floor using the grass texture */
+void draw_floor(SDL_Renderer *rend, int *floor_texture, int floor_width, int floor_height) {
+int i, j, r, g, b;
+    int tex_x, tex_y;
+    for (i = 0; i < WINDOW_WIDTH; i++) {
+        for (j = WINDOW_HEIGHT / 2; j < WINDOW_HEIGHT; j++) {
+/* Texture mapping logic */
+            tex_x = (i * floor_width) / WINDOW_WIDTH;
+            tex_y = ((j - WINDOW_HEIGHT / 2) * floor_height) / (WINDOW_HEIGHT / 2);
+
+/* Get the pixel color from the texture array */
+            int r = floor_texture[(tex_y * floor_width + tex_x) * 3];
+            int g = floor_texture[(tex_y * floor_width + tex_x) * 3 + 1];
+            int b = floor_texture[(tex_y * floor_width + tex_x) * 3 + 2];
+
+            SDL_SetRenderDrawColor(rend, r, g, b, 255);
+            SDL_RenderDrawPoint(rend, i, j);
+        }
+    }
+}
+
